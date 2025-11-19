@@ -5,6 +5,17 @@ const fetch = require('node-fetch');
 const base64 = require('base-64');
 
 const app = express();
+
+// --- BASIC AUTH (browser popup) ---
+app.use(basicAuth({
+  users: {
+    [process.env.AUTH_USER]: process.env.AUTH_PASSWORD
+  },
+  challenge: true,          // gør at browser viser popup
+  realm: 'Protected Area'   // navn der ses i popup
+}));
+// -----------------------------------
+
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
