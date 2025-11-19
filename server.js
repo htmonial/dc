@@ -1,8 +1,8 @@
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const fetch = require('node-fetch');
 const base64 = require('base-64');
+const basicAuth = require('express-basic-auth');
 
 const app = express();
 
@@ -22,7 +22,7 @@ app.use(express.static('public'));
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const OWNER = 'htmonial';
 const REPO = 'dc';
-const FILE_PATH = 'data/colors.json'; // sti i repo
+const FILE_PATH = 'data/colors.json';
 const BRANCH = 'main';
 
 const GITHUB_API = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`;
@@ -30,7 +30,6 @@ const GITHUB_API = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${FIL
 // Hent farver fra GitHub
 app.get('/colors', async (req, res) => {
   try {
-    // Hent filindhold & SHA
     const resp = await fetch(GITHUB_API + `?ref=${BRANCH}`, {
       headers: {
         Authorization: `token ${GITHUB_TOKEN}`,
@@ -56,7 +55,6 @@ app.post('/colors', async (req, res) => {
   }
 
   try {
-    // Først hent nuværende fil for at få content og SHA
     const getResp = await fetch(GITHUB_API + `?ref=${BRANCH}`, {
       headers: {
         Authorization: `token ${GITHUB_TOKEN}`,
@@ -71,13 +69,13 @@ app.post('/colors', async (req, res) => {
     const colors = JSON.parse(currentContent);
 
     // Tilføj ny farve
-   colors.push(color);
+    colors.push(color);
 
     // Encode ny content
     const newContentString = JSON.stringify(colors, null, 2);
     const newContentBase64 = base64.encode(newContentString);
 
-    // Lav commit via GitHub API
+    // Commit via GitHub API
     const putResp = await fetch(GITHUB_API, {
       method: 'PUT',
       headers: {
@@ -102,6 +100,7 @@ app.post('/colors', async (req, res) => {
     console.log('Commit lavet:', putData.commit.sha);
 
     res.json({ success: true });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Kunne ikke gemme farve til GitHub' });
@@ -110,4 +109,3 @@ app.post('/colors', async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server kører på port ${PORT}`));
-
