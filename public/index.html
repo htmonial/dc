@@ -126,12 +126,12 @@ function renderBars() {
 // Submit farve
 submitBtn.addEventListener('click', async () => {
     if(sessionStorage.getItem('submitted')){
-        alert("Du kan kun indsende én farve pr. session!");
+        alert("You can only submit one color!");
         return;
     }
     const newColor = colorText.value;
     if(!/^#([0-9A-Fa-f]{6})$/.test(newColor)){
-        alert("Indtast en gyldig hex-farve!");
+        alert("Submit a valid hex-color!");
         return;
     }
 
