@@ -2,8 +2,20 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fetch = require('node-fetch');
 const base64 = require('base-64');
+const basicAuth = require('express-basic-auth');   // ← tilføjet
 
 const app = express();
+
+// --- BASIC AUTH (browser popup) ---
+app.use(basicAuth({
+  users: {
+    [process.env.AUTH_USER]: process.env.AUTH_PASSWORD
+  },
+  challenge: true,
+  realm: 'Protected Area'
+}));
+// -----------------------------------
+
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
@@ -53,7 +65,6 @@ app.post('/colors', async (req, res) => {
   }
 
   try {
-    // Hent nuværende fil for content og SHA
     const getResp = await fetch(GITHUB_API + `?ref=${BRANCH}`, {
       headers: {
         Authorization: `token ${GITHUB_TOKEN}`,
@@ -77,7 +88,6 @@ app.post('/colors', async (req, res) => {
     // Tilføj ny farve med timestamp
     colors.push({ color, timestamp: new Date().toISOString() });
 
-    // Encode og commit til GitHub
     const newContentBase64 = base64.encode(JSON.stringify(colors, null, 2));
 
     const putResp = await fetch(GITHUB_API, {
